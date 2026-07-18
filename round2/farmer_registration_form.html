@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Farmer Registration Form</title>
+<style>
+  :root{
+    --primary: #2E7D5B;
+    --primary-dark: #205C42;
+    --bg: #F4F8F5;
+    --card: #FFFFFF;
+    --border: #DCE5DF;
+    --text: #1F2A24;
+    --text-soft: #6B7A70;
+    --radius: 10px;
+  }
+
+  *{ box-sizing: border-box; }
+
+  body{
+    margin:0;
+    font-family: 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 32px 16px;
+    min-height: 100vh;
+  }
+
+  .form-card{
+    max-width: 640px;
+    margin: 0 auto;
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+    padding: 32px 28px;
+  }
+
+  .form-header{
+    text-align:center;
+    margin-bottom: 28px;
+  }
+
+  .form-header h1{
+    margin: 0 0 6px;
+    font-size: 26px;
+    font-weight: 700;
+    color: var(--primary-dark);
+  }
+
+  .form-header p{
+    margin:0;
+    font-size: 14px;
+    color: var(--text-soft);
+  }
+
+  form{
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+  }
+
+  .form-row{
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+
+  .field{
+    display: flex;
+    flex-direction: column;
+  }
+
+  label{
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: var(--text);
+  }
+
+  input, select{
+    padding: 11px 13px;
+    font-size: 15px;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    background: #FAFCFB;
+    color: var(--text);
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    width: 100%;
+    font-family: inherit;
+  }
+
+  input::placeholder{
+    color: #A6B2AC;
+  }
+
+  input:focus, select:focus{
+    border-color: var(--primary);
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(46,125,91,0.15);
+  }
+
+  select{
+    appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%236B7A70' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 36px;
+  }
+
+  .submit-btn{
+    margin-top: 8px;
+    background: var(--primary);
+    color: #fff;
+    border: none;
+    padding: 14px;
+    font-size: 16px;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: background 0.15s, transform 0.1s;
+    font-family: inherit;
+  }
+
+  .submit-btn:hover{
+    background: var(--primary-dark);
+  }
+
+  .submit-btn:active{
+    transform: scale(0.98);
+  }
+
+  @media (max-width: 560px){
+    .form-card{
+      padding: 24px 18px;
+    }
+    .form-row{
+      grid-template-columns: 1fr;
+      gap: 18px;
+    }
+  }
+</style>
+</head>
+<body>
+
+  <div class="form-card">
+    <div class="form-header">
+      <h1>Farmer Registration</h1>
+      <p>Please fill in your details below to register your farm profile.</p>
+    </div>
+
+    <form action="#" method="POST">
+
+      <div class="field">
+        <label for="farmerName">Farmer Name</label>
+        <input type="text" id="farmerName" name="farmerName" placeholder="Enter your full name" required>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="contactNumber">Contact Number</label>
+          <input type="tel" id="contactNumber" name="contactNumber" placeholder="e.g. 0300-1234567" required>
+        </div>
+        <div class="field">
+          <label for="email">Email Address</label>
+          <input type="email" id="email" name="email" placeholder="you@example.com">
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="farmLocation">Farm Location</label>
+        <input type="text" id="farmLocation" name="farmLocation" placeholder="Village, Tehsil, District" required>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="cropType">Crop Type</label>
+          <select id="cropType" name="cropType" required>
+            <option value="" disabled selected>Select crop type</option>
+            <option>Wheat</option>
+            <option>Rice</option>
+            <option>Cotton</option>
+            <option>Sugarcane</option>
+            <option>Maize</option>
+            <option>Vegetables</option>
+            <option>Fruits</option>
+            <option>Other</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="farmSize">Farm Size (acres)</label>
+          <input type="number" id="farmSize" name="farmSize" placeholder="e.g. 12" min="0" step="0.1" required>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="field">
+          <label for="experience">Farming Experience (years)</label>
+          <input type="number" id="experience" name="experience" placeholder="e.g. 5" min="0" step="1">
+        </div>
+        <div class="field">
+          <label for="irrigationMethod">Irrigation Method</label>
+          <select id="irrigationMethod" name="irrigationMethod" required>
+            <option value="" disabled selected>Select irrigation method</option>
+            <option>Canal</option>
+            <option>Tube Well</option>
+            <option>Drip Irrigation</option>
+            <option>Sprinkler</option>
+            <option>Rain-fed</option>
+            <option>Mixed</option>
+          </select>
+        </div>
+      </div>
+
+      <button type="submit" class="submit-btn">Submit Registration</button>
+
+    </form>
+  </div>
+
+</body>
+</html>
