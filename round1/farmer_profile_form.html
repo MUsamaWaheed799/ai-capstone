@@ -1,0 +1,576 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AquaX AI — Farmer Profile</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Zilla+Slab:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root{
+    --teal: #1E6E76;
+    --teal-dark: #144B51;
+    --gold: #C99A2E;
+    --paper: #FAF6EA;
+    --paper-line: #E4DAC3;
+    --ink: #2B2118;
+    --ink-soft: #6B6152;
+    --leaf: #5B7F3D;
+    --error: #A8402E;
+    --radius: 10px;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    min-height:100vh;
+    padding: 24px 16px 60px;
+  }
+
+  .sheet{
+    max-width: 640px;
+    margin: 0 auto;
+  }
+
+  /* ---------- Header / ledger stamp ---------- */
+  .letterhead{
+    display:flex;
+    align-items:flex-start;
+    justify-content:space-between;
+    gap:16px;
+    border-bottom: 2px solid var(--ink);
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+  }
+  .letterhead h1{
+    font-family:'Zilla Slab', serif;
+    font-weight:700;
+    font-size: clamp(26px, 6vw, 34px);
+    margin:0 0 4px;
+    letter-spacing: -0.01em;
+  }
+  .letterhead p{
+    margin:0;
+    font-size:13px;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+  }
+  .seal{
+    flex-shrink:0;
+    width:64px; height:64px;
+    border-radius:50%;
+    border: 2px solid var(--teal);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    transform: rotate(-8deg);
+  }
+  .seal svg{ width:34px; height:34px; }
+
+  /* ---------- Water tank gauge (signature element) ---------- */
+  .gauge-wrap{
+    background: var(--teal-dark);
+    border-radius: var(--radius);
+    padding: 16px 18px;
+    margin-bottom: 28px;
+    display:flex;
+    align-items:center;
+    gap:16px;
+    color:#EAF3F2;
+  }
+  .tank{
+    position:relative;
+    width:46px; height:60px;
+    border: 2.5px solid #EAF3F2;
+    border-top:none;
+    border-radius: 0 0 6px 6px;
+    overflow:hidden;
+    flex-shrink:0;
+    background: rgba(255,255,255,0.06);
+  }
+  .tank-fill{
+    position:absolute;
+    bottom:0; left:0; right:0;
+    height:0%;
+    background: linear-gradient(180deg, var(--gold), #A97E1E);
+    transition: height 0.5s cubic-bezier(.4,0,.2,1);
+  }
+  .tank-fill::before{
+    content:"";
+    position:absolute;
+    top:-3px; left:0; right:0; height:6px;
+    background: inherit;
+    border-radius: 50%;
+    opacity:0.7;
+  }
+  .gauge-text .label{
+    font-family:'JetBrains Mono', monospace;
+    font-size:11px;
+    letter-spacing:0.08em;
+    text-transform:uppercase;
+    color: #B9D6D3;
+    margin-bottom:4px;
+  }
+  .gauge-text .value{
+    font-family:'Zilla Slab', serif;
+    font-weight:700;
+    font-size:20px;
+  }
+
+  /* ---------- Ledger entries ---------- */
+  .entry{
+    display:flex;
+    gap:14px;
+    padding: 18px 0;
+    border-bottom: 1px solid var(--paper-line);
+  }
+  .entry-no{
+    font-family:'JetBrains Mono', monospace;
+    font-size:12px;
+    color: var(--ink-soft);
+    padding-top:10px;
+    width:24px;
+    flex-shrink:0;
+  }
+  .entry-body{ flex:1; min-width:0; }
+
+  label{
+    display:block;
+    font-weight:600;
+    font-size:14.5px;
+    margin-bottom:6px;
+    color: var(--ink);
+  }
+  .hint{
+    font-size:12px;
+    color: var(--ink-soft);
+    margin: -2px 0 8px;
+  }
+
+  input[type=text], input[type=tel], select{
+    width:100%;
+    padding: 11px 12px;
+    font-size:15px;
+    font-family:'Inter', sans-serif;
+    border: 1.5px solid #D6CBAE;
+    border-radius: 8px;
+    background: #fff;
+    color: var(--ink);
+    outline:none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input:focus, select:focus{
+    border-color: var(--teal);
+    box-shadow: 0 0 0 3px rgba(30,110,118,0.15);
+  }
+  input.error, select.error{
+    border-color: var(--error);
+  }
+  .err-msg{
+    font-size:12px;
+    color: var(--error);
+    margin-top:6px;
+    display:none;
+  }
+  .err-msg.show{ display:block; }
+
+  /* chip select for crops */
+  .chips{
+    display:flex;
+    flex-wrap:wrap;
+    gap:8px;
+  }
+  .chip{
+    padding: 9px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #D6CBAE;
+    background: #fff;
+    font-size:13.5px;
+    font-weight:500;
+    cursor:pointer;
+    user-select:none;
+    transition: all 0.15s;
+    color: var(--ink);
+  }
+  .chip:hover{ border-color: var(--teal); }
+  .chip.selected{
+    background: var(--teal);
+    border-color: var(--teal);
+    color:#fff;
+  }
+
+  /* radio-style pills for irrigation source */
+  .pills{ display:flex; flex-wrap:wrap; gap:8px; }
+  .pill{
+    padding: 9px 14px;
+    border-radius:8px;
+    border: 1.5px solid #D6CBAE;
+    background:#fff;
+    font-size:13.5px;
+    cursor:pointer;
+    font-weight:500;
+  }
+  .pill.selected{
+    background: var(--gold);
+    border-color: var(--gold);
+    color: #2B2118;
+  }
+
+  .row-2{
+    display:grid;
+    grid-template-columns: 1fr 1fr;
+    gap:12px;
+  }
+  @media (max-width:480px){
+    .row-2{ grid-template-columns: 1fr; }
+  }
+
+  /* ---------- Footer ---------- */
+  .submit-row{
+    margin-top:28px;
+    display:flex;
+    align-items:center;
+    gap:14px;
+  }
+  button.submit{
+    background: var(--teal);
+    color:#fff;
+    border:none;
+    padding: 14px 28px;
+    font-size:15.5px;
+    font-weight:600;
+    border-radius:8px;
+    cursor:pointer;
+    font-family:'Inter', sans-serif;
+    transition: background 0.15s, transform 0.1s;
+  }
+  button.submit:hover{ background: var(--teal-dark); }
+  button.submit:active{ transform: scale(0.98); }
+  button.submit:disabled{
+    background:#B9B2A0;
+    cursor:not-allowed;
+  }
+  .submit-hint{ font-size:12.5px; color:var(--ink-soft); }
+
+  .success-banner{
+    display:none;
+    margin-top:20px;
+    background: var(--leaf);
+    color:#fff;
+    padding:14px 16px;
+    border-radius:8px;
+    font-size:14px;
+    font-weight:500;
+  }
+  .success-banner.show{ display:block; }
+
+  :focus-visible{
+    outline: 2px solid var(--teal);
+    outline-offset: 2px;
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .tank-fill, button.submit{ transition:none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="sheet">
+
+  <div class="letterhead">
+    <div>
+      <h1>Farmer Profile</h1>
+      <p>AquaX AI · Irrigation Advisory Registration</p>
+    </div>
+    <div class="seal" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="#1E6E76" stroke-width="1.8">
+        <path d="M12 2C12 2 6 8 6 13a6 6 0 0012 0c0-5-6-11-6-11z"/>
+      </svg>
+    </div>
+  </div>
+
+  <div class="gauge-wrap">
+    <div class="tank"><div class="tank-fill" id="tankFill"></div></div>
+    <div class="gauge-text">
+      <div class="label">Profile filled</div>
+      <div class="value" id="gaugeValue">0%</div>
+    </div>
+  </div>
+
+  <form id="farmerForm" novalidate>
+
+    <div class="entry">
+      <div class="entry-no">01</div>
+      <div class="entry-body">
+        <label for="fullName">Full name</label>
+        <input type="text" id="fullName" name="fullName" placeholder="e.g. Ghulam Rasool" required>
+        <div class="err-msg" id="err-fullName">Please enter your full name.</div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-no">02</div>
+      <div class="entry-body">
+        <label for="phone">Phone number</label>
+        <div class="hint">Used for SMS and voice irrigation alerts</div>
+        <input type="tel" id="phone" name="phone" placeholder="03XX-XXXXXXX" required>
+        <div class="err-msg" id="err-phone">Enter a valid Pakistani mobile number.</div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-no">03</div>
+      <div class="entry-body">
+        <label for="language">Preferred language</label>
+        <div class="hint">For voice advisory calls</div>
+        <select id="language" name="language" required>
+          <option value="" disabled selected>Select a language</option>
+          <option value="ur">Urdu</option>
+          <option value="pa">Punjabi</option>
+          <option value="ps">Pashto</option>
+          <option value="sd">Sindhi</option>
+          <option value="en">English</option>
+        </select>
+        <div class="err-msg" id="err-language">Please select a preferred language.</div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-no">04</div>
+      <div class="entry-body">
+        <label>Village / Tehsil &amp; District</label>
+        <div class="row-2">
+          <div>
+            <input type="text" id="tehsil" name="tehsil" placeholder="Village / Tehsil" required>
+            <div class="err-msg" id="err-tehsil">Required.</div>
+          </div>
+          <div>
+            <input type="text" id="district" name="district" placeholder="District" required>
+            <div class="err-msg" id="err-district">Required.</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-no">05</div>
+      <div class="entry-body">
+        <label>Province</label>
+        <select id="province" name="province" required>
+          <option value="" disabled selected>Select province</option>
+          <option>Punjab</option>
+          <option>Sindh</option>
+          <option>Khyber Pakhtunkhwa</option>
+          <option>Balochistan</option>
+          <option>Gilgit-Baltistan</option>
+          <option>Azad Jammu &amp; Kashmir</option>
+        </select>
+        <div class="err-msg" id="err-province">Please select a province.</div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-no">06</div>
+      <div class="entry-body">
+        <label for="farmSize">Farm size (acres)</label>
+        <input type="text" id="farmSize" name="farmSize" placeholder="e.g. 12.5" inputmode="decimal" required>
+        <div class="err-msg" id="err-farmSize">Enter the farm size in acres (numbers only).</div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-no">07</div>
+      <div class="entry-body">
+        <label>Primary crops grown</label>
+        <div class="hint">Select all that apply</div>
+        <div class="chips" id="cropChips">
+          <div class="chip" data-crop="Wheat">Wheat</div>
+          <div class="chip" data-crop="Rice">Rice</div>
+          <div class="chip" data-crop="Cotton">Cotton</div>
+          <div class="chip" data-crop="Sugarcane">Sugarcane</div>
+          <div class="chip" data-crop="Maize">Maize</div>
+          <div class="chip" data-crop="Vegetables">Vegetables</div>
+          <div class="chip" data-crop="Fodder">Fodder</div>
+        </div>
+        <div class="err-msg" id="err-crops">Select at least one crop.</div>
+      </div>
+    </div>
+
+    <div class="entry">
+      <div class="entry-no">08</div>
+      <div class="entry-body">
+        <label>Irrigation source</label>
+        <div class="pills" id="irrigationPills">
+          <div class="pill" data-source="Canal">Canal</div>
+          <div class="pill" data-source="Tube well">Tube well</div>
+          <div class="pill" data-source="Rain-fed">Rain-fed</div>
+          <div class="pill" data-source="Mixed">Mixed</div>
+        </div>
+        <div class="err-msg" id="err-irrigation">Select an irrigation source.</div>
+      </div>
+    </div>
+
+    <div class="entry" style="border-bottom:none;">
+      <div class="entry-no">09</div>
+      <div class="entry-body">
+        <label for="soilType">Soil type <span style="color:var(--ink-soft); font-weight:400;">(optional)</span></label>
+        <select id="soilType" name="soilType">
+          <option value="" selected>Not sure / skip</option>
+          <option>Loamy</option>
+          <option>Clay</option>
+          <option>Sandy</option>
+          <option>Silty</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="submit-row">
+      <button type="submit" class="submit" id="submitBtn">Register profile</button>
+      <span class="submit-hint">Takes about a minute</span>
+    </div>
+
+    <div class="success-banner" id="successBanner">
+      Profile registered. Your irrigation advisory will begin shortly.
+    </div>
+
+  </form>
+</div>
+
+<script>
+  const form = document.getElementById('farmerForm');
+  const requiredFields = ['fullName','phone','language','tehsil','district','province','farmSize'];
+  let selectedCrops = new Set();
+  let selectedSource = null;
+
+  // Crop chips
+  document.querySelectorAll('#cropChips .chip').forEach(chip => {
+    chip.addEventListener('click', () => {
+      const crop = chip.dataset.crop;
+      if(selectedCrops.has(crop)){
+        selectedCrops.delete(crop);
+        chip.classList.remove('selected');
+      } else {
+        selectedCrops.add(crop);
+        chip.classList.add('selected');
+      }
+      hideError('crops');
+      updateGauge();
+    });
+  });
+
+  // Irrigation pills
+  document.querySelectorAll('#irrigationPills .pill').forEach(pill => {
+    pill.addEventListener('click', () => {
+      document.querySelectorAll('#irrigationPills .pill').forEach(p => p.classList.remove('selected'));
+      pill.classList.add('selected');
+      selectedSource = pill.dataset.source;
+      hideError('irrigation');
+      updateGauge();
+    });
+  });
+
+  // Live gauge update on any input
+  form.addEventListener('input', updateGauge);
+  form.addEventListener('change', updateGauge);
+
+  function updateGauge(){
+    let filled = 0;
+    const total = requiredFields.length + 2; // + crops + irrigation source
+
+    requiredFields.forEach(id => {
+      const el = document.getElementById(id);
+      if(el && el.value && el.value.trim() !== '') filled++;
+    });
+    if(selectedCrops.size > 0) filled++;
+    if(selectedSource) filled++;
+
+    const pct = Math.round((filled / total) * 100);
+    document.getElementById('tankFill').style.height = pct + '%';
+    document.getElementById('gaugeValue').textContent = pct + '%';
+  }
+
+  function showError(field){
+    document.getElementById(field)?.classList.add('error');
+    document.getElementById('err-' + field)?.classList.add('show');
+  }
+  function hideError(field){
+    document.getElementById(field)?.classList.remove('error');
+    document.getElementById('err-' + field)?.classList.remove('show');
+  }
+
+  function validatePhone(v){
+    return /^0\d{2,4}-?\d{7}$/.test(v.replace(/\s/g,''));
+  }
+  function validateNumber(v){
+    return /^\d+(\.\d+)?$/.test(v.trim());
+  }
+
+  form.addEventListener('submit', (e) => {
+    e.preventDefault();
+    let valid = true;
+
+    requiredFields.forEach(hideError);
+    hideError('crops');
+    hideError('irrigation');
+
+    requiredFields.forEach(id => {
+      const el = document.getElementById(id);
+      if(!el.value || el.value.trim() === ''){
+        showError(id);
+        valid = false;
+      }
+    });
+
+    const phoneVal = document.getElementById('phone').value;
+    if(phoneVal && !validatePhone(phoneVal)){
+      showError('phone');
+      valid = false;
+    }
+
+    const farmSizeVal = document.getElementById('farmSize').value;
+    if(farmSizeVal && !validateNumber(farmSizeVal)){
+      showError('farmSize');
+      valid = false;
+    }
+
+    if(selectedCrops.size === 0){
+      showError('crops');
+      valid = false;
+    }
+
+    if(!selectedSource){
+      showError('irrigation');
+      valid = false;
+    }
+
+    if(!valid){
+      document.getElementById('successBanner').classList.remove('show');
+      return;
+    }
+
+    const profile = {
+      fullName: document.getElementById('fullName').value.trim(),
+      phone: phoneVal.trim(),
+      language: document.getElementById('language').value,
+      tehsil: document.getElementById('tehsil').value.trim(),
+      district: document.getElementById('district').value.trim(),
+      province: document.getElementById('province').value,
+      farmSize: farmSizeVal.trim(),
+      crops: Array.from(selectedCrops),
+      irrigationSource: selectedSource,
+      soilType: document.getElementById('soilType').value || null
+    };
+
+    console.log('Farmer profile submitted:', profile);
+    document.getElementById('successBanner').classList.add('show');
+    document.getElementById('submitBtn').disabled = true;
+    document.getElementById('submitBtn').textContent = 'Registered ✓';
+  });
+</script>
+
+</body>
+</html>
